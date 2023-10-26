@@ -162,7 +162,6 @@ pub extern crate embedded_hal;
 pub extern crate fugit;
 pub extern crate ramp_maker;
 
-pub mod compat;
 pub mod drivers;
 pub mod motion_control;
 pub mod step_mode;
