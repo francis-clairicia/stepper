@@ -75,30 +75,24 @@ where
             State::Initial => {
                 self.driver
                     .apply_mode_config(self.step_mode)
-                    .map_err(|err| SignalError::Pin(err))?;
+                    .map_err(SignalError::Pin)?;
 
                 let ticks: TimerDuration<TIMER_HZ> =
                     Driver::SETUP_TIME.convert();
 
-                self.timer
-                    .start(ticks)
-                    .map_err(|err| SignalError::Timer(err))?;
+                self.timer.start(ticks).map_err(SignalError::Timer)?;
 
                 self.state = State::ApplyingConfig;
                 Poll::Pending
             }
             State::ApplyingConfig => match self.timer.wait() {
                 Ok(()) => {
-                    self.driver
-                        .enable_driver()
-                        .map_err(|err| SignalError::Pin(err))?;
+                    self.driver.enable_driver().map_err(SignalError::Pin)?;
 
                     let ticks: TimerDuration<TIMER_HZ> =
                         Driver::HOLD_TIME.convert();
 
-                    self.timer
-                        .start(ticks)
-                        .map_err(|err| SignalError::Timer(err))?;
+                    self.timer.start(ticks).map_err(SignalError::Timer)?;
 
                     self.state = State::EnablingDriver;
                     Poll::Ready(Ok(()))

@@ -361,11 +361,11 @@ impl<Driver> Stepper<Driver> {
     ///
     /// You might need to call [`Stepper::enable_motion_control`] to make this
     /// method available.
-    pub fn move_to_position<'r>(
-        &'r mut self,
+    pub fn move_to_position(
+        &mut self,
         max_velocity: Driver::Velocity,
         target_step: i32,
-    ) -> MoveToFuture<RefMut<'r, Driver>>
+    ) -> MoveToFuture<RefMut<'_, Driver>>
     where
         Driver: MotionControl,
     {

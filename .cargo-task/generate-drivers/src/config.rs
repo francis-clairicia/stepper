@@ -1,7 +1,7 @@
 use std::{
     fs::File,
     io::{prelude::*, Result},
-    path::PathBuf,
+    path::Path,
 };
 
 use serde_derive::Deserialize;
@@ -21,7 +21,7 @@ pub struct Config {
     pub drivers: Vec<Driver>,
 }
 
-pub fn load_drivers_toml(root: &PathBuf) -> Result<Config> {
+pub fn load_drivers_toml(root: &Path) -> Result<Config> {
     // It is assumed that 'drivers.toml' exists in the project's root.
     let path = root.join("drivers.toml");
     assert!(path.exists());
@@ -48,7 +48,7 @@ pub struct Manifest {
     pub package: Package,
 }
 
-pub fn load_cargo_toml(root: &PathBuf) -> Result<Manifest> {
+pub fn load_cargo_toml(root: &Path) -> Result<Manifest> {
     // It is assumed that 'Cargo.toml' exists in the project's root.
     let path = root.join("Cargo.toml");
     assert!(path.exists());

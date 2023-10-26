@@ -75,22 +75,22 @@ where
                     Direction::Forward => self
                         .driver
                         .dir()
-                        .map_err(|err| SignalError::PinUnavailable(err))?
+                        .map_err(SignalError::PinUnavailable)?
                         .set_high()
-                        .map_err(|err| SignalError::Pin(err))?,
+                        .map_err(SignalError::Pin)?,
                     Direction::Backward => self
                         .driver
                         .dir()
-                        .map_err(|err| SignalError::PinUnavailable(err))?
+                        .map_err(SignalError::PinUnavailable)?
                         .set_low()
-                        .map_err(|err| SignalError::Pin(err))?,
+                        .map_err(SignalError::Pin)?,
                 }
 
                 let ticks: TimerDuration<TIMER_HZ> =
                     Driver::SETUP_TIME.convert();
                 self.timer
                     .start(ticks)
-                    .map_err(|err| SignalError::Timer(err))?;
+                    .map_err(SignalError::Timer)?;
 
                 self.state = State::DirectionSet;
                 Poll::Pending
