@@ -100,3 +100,40 @@ enum State<Velocity> {
     Moving,
     Finished,
 }
+
+#[cfg(feature = "async")]
+use core::future::Future;
+
+#[cfg(feature = "async")]
+impl<Driver> Future for MoveToFuture<Driver>
+where
+    Driver: MotionControl + Unpin,
+    Driver::Velocity: Unpin,
+{
+    type Output = Result<(), Driver::Error>;
+
+    fn poll(
+        self: core::pin::Pin<&mut Self>,
+        cx: &mut core::task::Context<'_>,
+    ) -> Poll<Self::Output> {
+        // match Self::poll(self.get_mut()) {
+        //     Poll::Ready(output) => Poll::Ready(output),
+        //     Poll::Pending => {
+        //         let fut = embassy_time::Timer::after_millis(2);
+        //         let mut pinned_fut = core::pin::pin!(fut);
+
+        //         match pinned_fut.as_mut().poll(cx) {
+        //             Poll::Pending => Poll::Pending,
+        //             Poll::Ready(()) => panic!("Should not be ready"),
+        //         }
+        //     }
+        // }
+
+        if let Poll::Ready(output) = Self::poll(self.get_mut()) {
+            Poll::Ready(output)
+        } else {
+            cx.waker().wake_by_ref();
+            Poll::Pending
+        }
+    }
+}

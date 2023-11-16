@@ -45,7 +45,6 @@ default-features = false
 version = "0.1.7"
 default-features = false
 
-
 [dev-dependencies]
 fixed = "1.6.0"
 typenum = "1.12.0"
@@ -57,3 +56,4 @@ a4988 = []
 drv8825 = []
 stspin220 = []
 dq542ma = []
+async = []

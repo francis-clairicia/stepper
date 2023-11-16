@@ -88,9 +88,7 @@ where
 
                 let ticks: TimerDuration<TIMER_HZ> =
                     Driver::SETUP_TIME.convert();
-                self.timer
-                    .start(ticks)
-                    .map_err(SignalError::Timer)?;
+                self.timer.start(ticks).map_err(SignalError::Timer)?;
 
                 self.state = State::DirectionSet;
                 Poll::Pending
@@ -141,4 +139,49 @@ enum State {
     Initial,
     DirectionSet,
     Finished,
+}
+
+#[cfg(feature = "async")]
+use core::future::Future;
+
+#[cfg(feature = "async")]
+impl<Driver, Timer, const TIMER_HZ: u32> Future
+    for SetDirectionFuture<Driver, Timer, TIMER_HZ>
+where
+    Driver: SetDirection + Unpin,
+    Timer: TimerTrait<TIMER_HZ> + Unpin,
+{
+    type Output = Result<
+        (),
+        SignalError<
+            Driver::Error,
+            <Driver::Dir as ErrorType>::Error,
+            Timer::Error,
+        >,
+    >;
+
+    fn poll(
+        self: core::pin::Pin<&mut Self>,
+        cx: &mut core::task::Context<'_>,
+    ) -> Poll<Self::Output> {
+        // match Self::poll(self.get_mut()) {
+        //     Poll::Ready(output) => Poll::Ready(output),
+        //     Poll::Pending => {
+        //         let fut = embassy_time::Timer::after_millis(2);
+        //         let mut pinned_fut = core::pin::pin!(fut);
+
+        //         match pinned_fut.as_mut().poll(cx) {
+        //             Poll::Pending => Poll::Pending,
+        //             Poll::Ready(()) => panic!("Should not be ready"),
+        //         }
+        //     }
+        // }
+
+        if let Poll::Ready(output) = Self::poll(self.get_mut()) {
+            Poll::Ready(output)
+        } else {
+            cx.waker().wake_by_ref();
+            Poll::Pending
+        }
+    }
 }

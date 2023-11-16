@@ -152,3 +152,43 @@ enum State {
     EnablingDriver,
     Finished,
 }
+
+#[cfg(feature = "async")]
+use core::future::Future;
+
+#[cfg(feature = "async")]
+impl<Driver, Timer, const TIMER_HZ: u32> Future
+    for SetStepModeFuture<Driver, Timer, TIMER_HZ>
+where
+    Driver: SetStepMode + Unpin,
+    Driver::StepMode: Unpin,
+    Timer: TimerTrait<TIMER_HZ> + Unpin,
+{
+    type Output =
+        Result<(), SignalError<Infallible, Driver::Error, Timer::Error>>;
+
+    fn poll(
+        self: core::pin::Pin<&mut Self>,
+        cx: &mut core::task::Context<'_>,
+    ) -> Poll<Self::Output> {
+        // match Self::poll(self.get_mut()) {
+        //     Poll::Ready(output) => Poll::Ready(output),
+        //     Poll::Pending => {
+        //         let fut = embassy_time::Timer::after_millis(2);
+        //         let mut pinned_fut = core::pin::pin!(fut);
+
+        //         match pinned_fut.as_mut().poll(cx) {
+        //             Poll::Pending => Poll::Pending,
+        //             Poll::Ready(()) => panic!("Should not be ready"),
+        //         }
+        //     }
+        // }
+
+        if let Poll::Ready(output) = Self::poll(self.get_mut()) {
+            Poll::Ready(output)
+        } else {
+            cx.waker().wake_by_ref();
+            Poll::Pending
+        }
+    }
+}
